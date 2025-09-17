@@ -46,21 +46,36 @@ export default function TikTokGenerator() {
 
   const handlePageSave = (updatedPage: any) => {
     const updatedSlides = [...appState.slides]
-    const currentSlide = updatedSlides[appState.currentSlide]
 
-    if (currentSlide) {
-      const pageIndex = currentSlide.pages.findIndex((p) => p.id === updatedPage.id)
+    // Find which slide contains the page being edited
+    let targetSlideIndex = -1
+    let targetPageIndex = -1
+
+    for (let slideIndex = 0; slideIndex < updatedSlides.length; slideIndex++) {
+      const pageIndex = updatedSlides[slideIndex].pages.findIndex((p) => p.id === updatedPage.id)
       if (pageIndex !== -1) {
-        currentSlide.pages[pageIndex] = updatedPage
-        updateAppState({ slides: updatedSlides, editingPage: null })
+        targetSlideIndex = slideIndex
+        targetPageIndex = pageIndex
+        break
       }
+    }
+
+    if (targetSlideIndex !== -1 && targetPageIndex !== -1) {
+      updatedSlides[targetSlideIndex].pages[targetPageIndex] = updatedPage
+      updateAppState({ slides: updatedSlides, editingPage: null })
     }
   }
 
   const getCurrentEditingPage = () => {
     if (!appState.editingPage) return null
-    const currentSlide = appState.slides[appState.currentSlide]
-    return currentSlide?.pages.find((p) => p.id === appState.editingPage) || null
+
+    // Search through all slides to find the page being edited
+    for (const slide of appState.slides) {
+      const page = slide.pages.find((p) => p.id === appState.editingPage)
+      if (page) return page
+    }
+
+    return null
   }
 
   const progressValue = (currentStep / 3) * 100
