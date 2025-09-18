@@ -1,4 +1,6 @@
 // AI Integration Functions using Pollinations AI
+import type { HookProvenance } from "./types"
+
 export interface AIGenerationOptions {
   model?: string
   seed?: number
@@ -9,8 +11,9 @@ export async function generateCustomHook(
   appDetails: any,
   inspirationHook: string,
   strategy: string,
+  originalHookData?: { key: string; score: number; notes?: string; tags?: string[] },
   options: AIGenerationOptions = {},
-): Promise<string> {
+): Promise<{ customHook: string; provenance: HookProvenance }> {
   const prompt = `Transform this hook inspiration: "${inspirationHook}"
   
 For app: ${appDetails.name} - ${appDetails.description}
@@ -41,8 +44,20 @@ Return only the hook text.`
       throw new Error(`AI generation failed: ${response.statusText}`)
     }
 
-    const result = await response.text()
-    return result.trim()
+    const customHook = await response.text()
+
+    const provenance: HookProvenance = {
+      originalHook: inspirationHook,
+      originalKey: originalHookData?.key || "unknown",
+      originalScore: originalHookData?.score || 0,
+      originalNotes: originalHookData?.notes,
+      originalTags: originalHookData?.tags,
+      customizedHook: customHook.trim(),
+      strategy: strategy,
+      customizationPrompt: prompt,
+    }
+
+    return { customHook: customHook.trim(), provenance }
   } catch (error) {
     console.error("AI hook generation failed:", error)
     // Fallback hooks based on strategy
@@ -53,7 +68,21 @@ Return only the hook text.`
       "Problem-Solution": `${appDetails.name} solves your biggest problem`,
       Comparison: `Why ${appDetails.name} beats the competition`,
     }
-    return fallbacks[strategy as keyof typeof fallbacks] || `Download ${appDetails.name} today!`
+
+    const fallbackHook = fallbacks[strategy as keyof typeof fallbacks] || `Download ${appDetails.name} today!`
+
+    const provenance: HookProvenance = {
+      originalHook: inspirationHook || "fallback",
+      originalKey: originalHookData?.key || "fallback",
+      originalScore: originalHookData?.score || 0,
+      originalNotes: "Fallback hook used due to AI generation failure",
+      originalTags: ["fallback"],
+      customizedHook: fallbackHook,
+      strategy: strategy,
+      customizationPrompt: prompt,
+    }
+
+    return { customHook: fallbackHook, provenance }
   }
 }
 

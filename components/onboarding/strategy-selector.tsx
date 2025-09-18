@@ -34,14 +34,13 @@ export function StrategySelector({
   onRecommendationUpdate,
 }: StrategySelectorProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [previewHooks, setPreviewHooks] = useState<Record<string, string>>({})
+  const [previewHooks, setPreviewHooks] = useState<Record<string, { customHook: string; originalHook: string }>>({})
 
   // Generate AI recommendation on mount
   useEffect(() => {
     const generateRecommendation = async () => {
       setIsAnalyzing(true)
       try {
-        // Simple recommendation logic based on app description keywords
         const description = appDetails.description.toLowerCase()
         let recommended = "Hype" // default
 
@@ -61,14 +60,20 @@ export function StrategySelector({
 
         onRecommendationUpdate(recommended)
 
-        // Generate preview hooks for each strategy
-        const hooks: Record<string, string> = {}
+        const hooks: Record<string, { customHook: string; originalHook: string }> = {}
         for (const strategy of strategies) {
           try {
-            const hook = await generateCustomHook(appDetails, "", strategy.id)
-            hooks[strategy.id] = hook
+            const mockOriginalHook = `Original ${strategy.id.toLowerCase()} hook inspiration`
+            const { customHook } = await generateCustomHook(appDetails, mockOriginalHook, strategy.id)
+            hooks[strategy.id] = {
+              customHook: customHook,
+              originalHook: mockOriginalHook,
+            }
           } catch (error) {
-            hooks[strategy.id] = `${strategy.name} hook for ${appDetails.name}`
+            hooks[strategy.id] = {
+              customHook: `${strategy.name} hook for ${appDetails.name}`,
+              originalHook: "Fallback original hook",
+            }
           }
         }
         setPreviewHooks(hooks)
@@ -104,7 +109,6 @@ export function StrategySelector({
         </CardHeader>
       </Card>
 
-      {/* AI Recommendation */}
       {isAnalyzing && (
         <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 border-blue-200 dark:border-blue-800 mb-6">
           <CardContent className="p-6">
@@ -140,7 +144,6 @@ export function StrategySelector({
         </Card>
       )}
 
-      {/* Strategy Cards */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {strategies.map((strategy) => {
           const Icon = strategyIcons[strategy.id as keyof typeof strategyIcons] || Target
@@ -181,15 +184,26 @@ export function StrategySelector({
               </CardHeader>
 
               <CardContent className="pt-0">
-                {/* Preview Hook */}
                 {previewHook && (
-                  <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Preview Hook:</p>
-                    <p className="text-sm italic text-gray-800 dark:text-gray-200">"{previewHook}"</p>
+                  <div className="mb-4 space-y-3">
+                    <div className="p-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <p className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-1">
+                        ✨ AI-Customized Hook:
+                      </p>
+                      <p className="text-sm font-semibold text-blue-800 dark:text-blue-200">
+                        "{previewHook.customHook}"
+                      </p>
+                    </div>
+
+                    <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                        📝 Original Inspiration:
+                      </p>
+                      <p className="text-xs italic text-gray-600 dark:text-gray-300">"{previewHook.originalHook}"</p>
+                    </div>
                   </div>
                 )}
 
-                {/* Examples */}
                 <div>
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Examples:</p>
                   <ul className="space-y-1">
@@ -206,7 +220,6 @@ export function StrategySelector({
         })}
       </div>
 
-      {/* Continue Button */}
       {selectedStrategy && (
         <div className="mt-8 text-center">
           <Button

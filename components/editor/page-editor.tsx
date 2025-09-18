@@ -10,7 +10,8 @@ import { Slider } from "@/components/ui/slider"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Sparkles, Search, Palette, Type, ImageIcon, Save, X } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Sparkles, Search, Palette, Type, ImageIcon, Save, X, Lightbulb } from "lucide-react"
 import type { SlidePage, AppDetails, TextStyle, ImageStyle } from "@/lib/types"
 import { generatePageContent } from "@/lib/ai-functions"
 import { getImages } from "@/lib/s3-functions"
@@ -165,6 +166,69 @@ export function PageEditor({ page, appDetails, strategy, isOpen, onClose, onSave
                   </div>
                 </CardContent>
               </Card>
+
+              {editedPage.hookProvenance && (
+                <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 border-blue-200 dark:border-blue-800">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Lightbulb className="w-4 h-4 text-blue-600" />
+                      Hook Inspiration & AI Customization
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-xs bg-white/50">
+                          Original Hook
+                        </Badge>
+                        <span className="text-xs text-blue-600 dark:text-blue-400">
+                          Score: {(editedPage.hookProvenance.originalScore * 100).toFixed(0)}%
+                        </span>
+                      </div>
+                      <p className="text-sm italic text-gray-700 dark:text-gray-300 bg-white/30 p-2 rounded">
+                        "{editedPage.hookProvenance.originalHook}"
+                      </p>
+                      {editedPage.hookProvenance.originalNotes && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          📝 {editedPage.hookProvenance.originalNotes}
+                        </p>
+                      )}
+                      {editedPage.hookProvenance.originalTags && editedPage.hookProvenance.originalTags.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {editedPage.hookProvenance.originalTags.map((tag, index) => (
+                            <Badge key={index} variant="secondary" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="border-t border-blue-200 dark:border-blue-700 pt-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge className="text-xs bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+                          AI Customized
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {editedPage.hookProvenance.strategy}
+                        </Badge>
+                      </div>
+                      <p className="text-sm font-semibold text-purple-800 dark:text-purple-200 bg-white/50 p-2 rounded">
+                        "{editedPage.hookProvenance.customizedHook}"
+                      </p>
+                    </div>
+
+                    <details className="text-xs">
+                      <summary className="cursor-pointer text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
+                        View AI Customization Prompt
+                      </summary>
+                      <div className="mt-2 p-2 bg-gray-100 dark:bg-gray-800 rounded text-xs text-gray-600 dark:text-gray-400 max-h-20 overflow-y-auto">
+                        {editedPage.hookProvenance.customizationPrompt}
+                      </div>
+                    </details>
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
             {/* Editor */}

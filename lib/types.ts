@@ -37,6 +37,7 @@ export interface SlidePage {
   text: string
   textStyle: TextStyle
   imageStyle: ImageStyle
+  hookProvenance?: HookProvenance
 }
 
 export interface Slide {
@@ -69,6 +70,17 @@ export interface AppState {
   // Cache
   imageSearchCache: Map<string, any[]>
   hookSearchCache: Map<string, any[]>
+}
+
+export interface HookProvenance {
+  originalHook: string
+  originalKey: string
+  originalScore: number
+  originalNotes?: string
+  originalTags?: string[]
+  customizedHook: string
+  strategy: string
+  customizationPrompt: string
 }
 
 export const STRATEGIES: Strategy[] = [
